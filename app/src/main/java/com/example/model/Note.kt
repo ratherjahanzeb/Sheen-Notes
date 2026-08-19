@@ -1,29 +1,12 @@
 package com.example.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "notes")
 data class Note(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
     val content: String,
     val timestamp: String
-)
-
-val dummyNotes = listOf(
-    Note(
-        id = 1,
-        title = "Winter in Kashmir",
-        content = "The snow is falling gently over the Chinar trees. The entire valley is covered in a crisp, white blanket. Time seems to slow down here.",
-        timestamp = "Dec 15"
-    ),
-    Note(
-        id = 2,
-        title = "Groceries",
-        content = "• Kashmiri Kahwa tea leaves\n• Saffron\n• Honey\n• Almonds",
-        timestamp = "Dec 16"
-    ),
-    Note(
-        id = 3,
-        title = "Design Ideas",
-        content = "Minimalist, flat AppBar. Soft ice blue FAB. Frosty shadows on cards.",
-        timestamp = "Dec 18"
-    )
 )
