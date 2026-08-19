@@ -1,0 +1,6 @@
+{
+  "name": "Sheen Notes",
+  "description": "A minimal winter-inspired notes app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
