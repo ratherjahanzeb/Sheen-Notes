@@ -11,18 +11,27 @@ import com.example.ui.NotesViewModel
 import com.example.ui.NotesViewModelFactory
 import com.example.ui.theme.SheenNotesTheme
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Composable
+import com.example.dataStore
+
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val app = application as NotesApplication
     val viewModel: NotesViewModel by viewModels {
-        NotesViewModelFactory(app.repository)
+        NotesViewModelFactory(app.repository, app.dataStore)
     }
 
     enableEdgeToEdge()
     setContent {
-      SheenNotesTheme {
+      val isDarkModePref by viewModel.isDarkMode.collectAsStateWithLifecycle()
+      val darkTheme = isDarkModePref ?: isSystemInDarkTheme()
+
+      SheenNotesTheme(darkTheme = darkTheme) {
         AppNavigation(viewModel = viewModel)
       }
     }
