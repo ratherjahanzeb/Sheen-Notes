@@ -1,6 +1,7 @@
 # Sheen Notes ❄️
 
-A beautifully minimal, offline-first notes application inspired by the serene winter landscapes of Kashmir. Built natively for Android using Kotlin and Jetpack Compose.
+A minimal, elegant note-taking application inspired by the serene winters of Kashmir ("Sheen" translates to snow). Built with a focus on simplicity, fluid animations, and a distraction-free writing experience.
+
 
 ## 🌟 Features
 
