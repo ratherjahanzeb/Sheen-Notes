@@ -1,0 +1,8 @@
+Sheen-Notes is a clean, private notes app that works completely offline.
+Features:
+No internet connection required
+No tracking or analytics
+Clean and simple user interface
+Complete privacy - your notes stay on your device
+No ads
+Open source (GPL-3.0)
