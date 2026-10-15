@@ -1,0 +1,14 @@
+# Orion Store .jpg Image Links
+
+To ensure Orion Store accepts these raw GitHub `.jpg` links:
+1. Make sure your GitHub repository (`ratherjahanzeb/Sheen-Notes`) is **Public**.
+2. Commit and push the `screenshots/` folder containing the `.jpg` files to your GitHub repository.
+
+Here are the direct `.jpg` links:
+
+1. https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/light_theme.jpg
+2. https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/search_feature.jpg
+3. https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/dark_theme.jpg
+4. https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/notes_list.jpg
+
+*(If your default branch is `master`, replace `main` with `master`).*
