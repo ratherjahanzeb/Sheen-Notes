@@ -1,25 +1,28 @@
-# Sheen Notes - App Screenshots & UI Overview
+# Sheen Notes - Public App Screenshots & UI Overview
 
-Welcome to the **Sheen Notes** screenshot repository. Sheen Notes is a minimal, winter-inspired notes application built with Kotlin and Jetpack Compose, featuring Material Design 3 and a serene snowy aesthetic.
+Welcome to the **Sheen Notes** screenshots repository. Below are the direct public links to the uploaded application screenshots showcasing the winter-inspired UI design, features, and dark mode.
 
-## Available Screenshots
+## Public Screenshot Links
 
-- **[Greeting Screenshot (`greeting.png`)](greeting.png)**: Automated UI test capture showing the winter-themed greeting and UI components.
+### 1. Main Dashboard (Light Theme)
+- **Direct Link**: [https://github.com/user-attachments/assets/afec8c05-6c79-4427-80cb-5b0cc87cf043](https://github.com/user-attachments/assets/afec8c05-6c79-4427-80cb-5b0cc87cf043)
+- **Preview**:  
+  ![Dashboard Screenshot](https://github.com/user-attachments/assets/afec8c05-6c79-4427-80cb-5b0cc87cf043)
 
-## UI Screens Overview
+### 2. Note Editor (Light Theme)
+- **Direct Link**: [https://github.com/user-attachments/assets/7bb9357d-6603-4d42-8356-03a4b60e44f1](https://github.com/user-attachments/assets/7bb9357d-6603-4d42-8356-03a4b60e44f1)
+- **Preview**:  
+  ![Editor Screenshot](https://github.com/user-attachments/assets/7bb9357d-6603-4d42-8356-03a4b60e44f1)
 
-1. **Main Notes Dashboard**
-   - Clean top app bar featuring the signature Chinar/Snowflake icon.
-   - Real-time search bar with subtle frosted glass styling.
-   - Staggered grid layout showcasing user journals and notes with soft winter-blue shadows.
+### 3. Main Dashboard (Dark Mode / Night in Kashmir)
+- **Direct Link**: [https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290](https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290)
+- **Preview**:  
+  ![Dark Mode Dashboard](https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290)
 
-2. **Note Editor Screen**
-   - Immersive writing canvas with rich-text formatting support.
-   - Clean typography and distraction-free editing experience.
-
-3. **Dark Mode View**
-   - Deep midnight blue palette with luminous ice-blue accents.
-   - Optimized contrast and readability for low-light environments.
+### 4. Note Editor (Dark Mode)
+- **Direct Link**: [https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34](https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34)
+- **Preview**:  
+  ![Dark Mode Editor](https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34)
 
 ---
-*Generated for Sheen Notes App.*
+*Sheen Notes — Minimal Winter Aesthetic, Offline Storage, Rich Text Editing, Real-time Search, and Smooth Animations.*
