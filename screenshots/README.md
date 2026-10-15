@@ -1,28 +1,32 @@
-# Sheen Notes - Public App Screenshots & UI Overview
+# Sheen Notes - Public App Screenshots (.jpg)
 
-Welcome to the **Sheen Notes** screenshots repository. Below are the direct public links to the uploaded application screenshots showcasing the winter-inspired UI design, features, and dark mode.
+Welcome to the **Sheen Notes** screenshots repository. Below are the public links and repository paths for the application screenshots in `.jpg` format, showcasing the winter-inspired UI design, features, and dark mode.
 
-## Public Screenshot Links
+## Public Screenshot Links (.jpg)
 
 ### 1. Main Dashboard (Light Theme)
-- **Direct Link**: [https://github.com/user-attachments/assets/afec8c05-6c79-4427-80cb-5b0cc87cf043](https://github.com/user-attachments/assets/afec8c05-6c79-4427-80cb-5b0cc87cf043)
+- **Direct Link (.jpg)**: [dashboard_light.jpg](dashboard_light.jpg)
+- **GitHub Raw Link (.jpg)**: [https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/dashboard_light.jpg](https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/dashboard_light.jpg)
 - **Preview**:  
-  ![Dashboard Screenshot](https://github.com/user-attachments/assets/afec8c05-6c79-4427-80cb-5b0cc87cf043)
+  ![Dashboard Light](dashboard_light.jpg)
 
 ### 2. Note Editor (Light Theme)
-- **Direct Link**: [https://github.com/user-attachments/assets/7bb9357d-6603-4d42-8356-03a4b60e44f1](https://github.com/user-attachments/assets/7bb9357d-6603-4d42-8356-03a4b60e44f1)
+- **Direct Link (.jpg)**: [editor_light.jpg](editor_light.jpg)
+- **GitHub Raw Link (.jpg)**: [https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/editor_light.jpg](https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/editor_light.jpg)
 - **Preview**:  
-  ![Editor Screenshot](https://github.com/user-attachments/assets/7bb9357d-6603-4d42-8356-03a4b60e44f1)
+  ![Editor Light](editor_light.jpg)
 
 ### 3. Main Dashboard (Dark Mode / Night in Kashmir)
-- **Direct Link**: [https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290](https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290)
+- **Direct Link (.jpg)**: [dashboard_dark.jpg](dashboard_dark.jpg)
+- **GitHub Raw Link (.jpg)**: [https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/dashboard_dark.jpg](https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/dashboard_dark.jpg)
 - **Preview**:  
-  ![Dark Mode Dashboard](https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290)
+  ![Dashboard Dark](dashboard_dark.jpg)
 
 ### 4. Note Editor (Dark Mode)
-- **Direct Link**: [https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34](https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34)
+- **Direct Link (.jpg)**: [editor_dark.jpg](editor_dark.jpg)
+- **GitHub Raw Link (.jpg)**: [https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/editor_dark.jpg](https://raw.githubusercontent.com/ratherjahanzeb/Sheen-Notes/main/screenshots/editor_dark.jpg)
 - **Preview**:  
-  ![Dark Mode Editor](https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34)
+  ![Editor Dark](editor_dark.jpg)
 
 ---
 *Sheen Notes — Minimal Winter Aesthetic, Offline Storage, Rich Text Editing, Real-time Search, and Smooth Animations.*
