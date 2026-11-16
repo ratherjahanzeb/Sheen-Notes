@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sheen Notes — Interactive Preview</title>
+<meta name="theme-color" content="#0B1120" />
+<meta name="description" content="Interactive browser mock of SHEEN Notes, the minimal Kashmir-winter notes app (Compose UI recreation)." />
+<style>
+  /* ============ Page backdrop ============ */
+  :root {
+    --ease-spring: cubic-bezier(.2, 1.4, .4, 1);
+    --ease-standard: cubic-bezier(.4, 0, .2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+    background: radial-gradient(1200px 800px at 15% -10%, #233d63 0%, transparent 55%),
+                radial-gradient(1000px 700px at 110% 110%, #1d3354 0%, transparent 55%),
+                linear-gradient(160deg, #0a1220 0%, #101b2e 45%, #0a101d 100%);
+    color: #e6edf7;
+    overflow: hidden;
+  }
+  .backdrop { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .snowflake-bg { position: absolute; top: -5vh; color: rgba(226, 238, 250, .5); animation: snowfall linear infinite; }
+  @keyframes snowfall {
+    from { transform: translate3d(0, -5vh, 0) rotate(0deg); opacity: 0; }
+    10% { opacity: .7; }
+    to { transform: translate3d(6vw, 110vh, 0) rotate(240deg); opacity: .15; }
+  }
+
+  .stage {
+    position: relative; z-index: 1; height: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 56px;
+    padding: 24px;
+  }
+
+  /* Desktop-only side caption */
+  .caption { max-width: 340px; display: none; }
+  @media (min-width: 1080px) { .caption { display: block; } }
+  .caption .kicker {
+    font-size: 11px; letter-spacing: 3px; font-weight: 700; text-transform: uppercase;
+    color: #7cb7e8; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .caption .kicker::before { content: ""; width: 34px; height: 1px; background: #3d5a80; display: inline-block; }
+  .caption h1 {
+    font-size: 44px; line-height: 1.08; font-weight: 700; letter-spacing: -1px; color: #f2f7fa; margin-bottom: 16px;
+  }
+  .caption h1 .ice {
+    background: linear-gradient(120deg, #bae6fd 0%, #60a5fa 55%, #38bdf8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .caption p { font-size: 14.5px; line-height: 1.65; color: #9db2cc; margin-bottom: 20px; }
+  .caption ul { list-style: none; display: grid; gap: 10px; margin-bottom: 22px; }
+  .caption li { font-size: 13px; color: #b9c9de; display: flex; gap: 10px; align-items: flex-start; line-height: 1.45; }
+  .caption li svg { flex: 0 0 auto; margin-top: 1px; }
+  .caption .footnote { font-size: 11px; color: #5b7089; line-height: 1.6; border-top: 1px solid #22324a; padding-top: 16px; }
+  .caption code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; background: #16233a; padding: 2px 6px; border-radius: 5px; color: #8ec7f0; }
+
+  /* ============ Phone device frame ============ */
+  .device {
+    position: relative; flex: 0 0 auto;
+    width: min(430px, 100vw); height: min(880px, 100vh);
+    background: #05070c; border-radius: 54px; padding: 12px;
+    box-shadow: 0 0 0 1px #2b3446, 0 30px 80px rgba(0,0,0,.65), 0 0 120px rgba(56,189,248,.09), inset 0 0 6px rgba(255,255,255,.06);
+  }
+  .device::before { /* side buttons */
+    content: ""; position: absolute; right: -2.5px; top: 190px; width: 3px; height: 92px; border-radius: 3px; background: #39435a;
+  }
+  .device::after {
+    content: ""; position: absolute; left: -2.5px; top: 150px; width: 3px; height: 56px; border-radius: 3px; background: #39435a;
+    box-shadow: 0 84px 0 #39435a;
+  }
+  .notch {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    width: 158px; height: 28px; background: #05070c; border-radius: 0 0 20px 20px; z-index: 40;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .notch::before { content: ""; width: 44px; height: 5px; border-radius: 3px; background: #232c3d; }
+  .notch::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #1b2331; box-shadow: inset 0 0 2px #3b4a63; }
+
+  .screen {
+    position: relative; width: 100%; height: 100%; border-radius: 43px; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    display: flex; flex-direction: column; isolation: isolate;
+    transition: background .45s var(--ease-standard), color .45s var(--ease-standard);
+  }
+
+  /* ============ Theme tokens (from Color.kt) ============ */
+  .screen[data-theme="light"] {
+    --bg: #F2F7FA;
+    --text: #1E293B;
+    --text-2: #64748B;
+    --card: #FFFFFF;
+    --card-border: #EFF6FF;
+    --primary: #3B82F6;
+    --primary-container: #DBEAFE;
+    --on-primary-container: #1D4ED8;
+    --tertiary: #60A5FA;
+    --shadow: rgba(186, 230, 253, .65);
+    --shadow-fab: rgba(59, 130, 246, .45);
+    --field: rgba(255,255,255,.55);
+    --hairline: rgba(15, 35, 60, .06);
+    --error: #DC2626;
+    --statusbar: #1E293B;
+  }
+  .screen[data-theme="dark"] {
+    --bg: #0B1120;
+    --text: #F8FAFC;
+    --text-2: #94A3B8;
+    --card: #1E293B;
+    --card-border: #334155;
+    --primary: #38BDF8;
+    --primary-container: #0F172A;
+    --on-primary-container: #E0F2FE;
+    --tertiary: #38BDF8;
+    --shadow: rgba(0, 0, 0, .42);
+    --shadow-fab: rgba(56, 189, 248, .35);
+    --field: rgba(30, 41, 59, .6);
+    --hairline: rgba(226, 232, 240, .06);
+    --error: #F87171;
+    --statusbar: #F8FAFC;
+  }
+
+  /* ============ Status bar ============ */
+  .statusbar {
+    height: 40px; flex: 0 0 40px; display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 30px 0; font-size: 13px; font-weight: 600; color: var(--statusbar);
+    position: relative; z-index: 30; transition: color .45s;
+  }
+  .statusbar .icons { display: flex; align-items: center; gap: 6px; }
+
+  /* ============ Generic pane mechanics ============ */
+  main.panes { position: relative; flex: 1; overflow: hidden; }
+  .pane {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    background: var(--bg);
+    transition: background .45s var(--ease-standard);
+  }
+  .pane-list { z-index: 1; }
+  .pane-editor {
+    z-index: 2; opacity: 0; transform: translateY(26px) scale(.94); pointer-events: none;
+    transition: opacity .34s var(--ease-standard), transform .42s var(--ease-spring), background .45s;
+    transform-origin: 85% 92%;
+  }
+  .pane-editor.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .pane-editor.from-fab { transform-origin: 85% 92%; }
+
+  /* ============ Top app bars ============ */
+  .topbar {
+    flex: 0 0 64px; display: flex; align-items: center; padding: 0 12px 0 20px; position: relative; z-index: 5;
+  }
+  .topbar.list { justify-content: space-between; padding-right: 12px; }
+  .appbar-title {
+    position: absolute; left: 0; right: 0; text-align: center; pointer-events: none;
+    font-size: 20px; font-weight: 600; letter-spacing: -.4px; color: var(--primary);
+    transition: color .45s;
+  }
+  .logo-chip {
+    width: 38px; height: 38px; border-radius: 10px; background: var(--primary-container);
+    display: flex; align-items: center; justify-content: center; transition: background .45s; z-index: 1;
+  }
+  .logo-chip svg { width: 22px; height: 22px; }
+  .icon-btn {
+    width: 44px; height: 44px; border: 0; border-radius: 22px; background: transparent; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--text); z-index: 1;
+    transition: background .15s, color .45s, transform .15s;
+  }
+  .icon-btn:hover { background: var(--hairline); }
+  .icon-btn:active { transform: scale(.88); }
+  .icon-btn.error { color: var(--error); }
+
+  /* ============ Search field ============ */
+  .search-wrap { padding: 10px 20px 6px; }
+  .search {
+    display: flex; align-items: center; gap: 14px; height: 52px; border-radius: 16px;
+    background: var(--field); padding: 0 18px; transition: background .45s, box-shadow .25s;
+  }
+  .search:focus-within { box-shadow: 0 0 0 2px var(--primary) inset; }
+  .search svg { flex: 0 0 auto; color: var(--text-2); }
+  .search input {
+    flex: 1; border: 0; background: transparent; outline: 0; font: inherit; font-size: 16px; color: var(--text);
+  }
+  .search input::placeholder { color: var(--text-2); opacity: .55; }
+
+  /* ============ Notes grid (staggered) ============ */
+  .grid-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 10px 20px 100px; scrollbar-width: thin; scrollbar-color: var(--card-border) transparent; }
+  .grid-scroll::-webkit-scrollbar { width: 6px; }
+  .grid-scroll::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+  .grid { columns: 2; column-gap: 14px; }
+  @media (max-width: 380px) { .grid { columns: 1; } }
+
+  .note-card {
+    position: relative; break-inside: avoid; margin-bottom: 14px; border: 0; text-align: left; cursor: pointer;
+    background: var(--card); border-radius: 24px; padding: 18px 18px 14px; display: block; width: 100%;
+    font-family: inherit; color: inherit;
+    border-bottom: 2px solid var(--card-border);
+    box-shadow: 0 14px 30px -12px var(--shadow);
+    transition: transform .22s var(--ease-spring), box-shadow .3s, background .45s;
+    overflow: hidden;
+  }
+  .note-card::after { /* faint frosted sheen */
+    content: ""; position: absolute; top: 0; left: -80%; width: 55%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.32), transparent);
+    transform: skewX(-18deg); animation: sheen 7s var(--ease-standard) infinite; pointer-events: none;
+  }
+  @keyframes sheen { 0%, 55% { left: -80%; } 85%, 100% { left: 130%; } }
+  .note-card:hover { transform: translateY(-3px); box-shadow: 0 20px 38px -12px var(--shadow); }
+  .note-card:active { transform: scale(.97); }
+  .note-card .label {
+    font-size: 9.5px; font-weight: 800; letter-spacing: 1.6px; color: var(--tertiary);
+    margin-bottom: 5px; display: block;
+  }
+  .note-card h3 {
+    font-size: 16.5px; line-height: 1.28; font-weight: 550; letter-spacing: -.2px; color: var(--text);
+    margin-bottom: 7px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+  }
+  .note-card .preview {
+    font-size: 11.5px; line-height: 1.5; color: var(--text-2);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+  }
+  .note-card .meta {
+    display: flex; align-items: center; gap: 5px; margin-top: 13px; opacity: .45; color: var(--text);
+    font-size: 10px; font-weight: 500;
+  }
+
+  /* Empty state */
+  .empty {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding: 0 40px; text-align: center;
+  }
+  .empty p { font-size: 15.5px; color: var(--text-2); opacity: .65; line-height: 1.5; }
+
+  /* ============ FAB ============ */
+  .fab {
+    position: absolute; right: 22px; bottom: 30px; z-index: 6;
+    width: 66px; height: 66px; border: 0; border-radius: 18px; cursor: pointer;
+    background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 14px 34px -6px var(--shadow-fab), 0 4px 12px var(--shadow);
+    transition: transform .2s var(--ease-spring), background .45s, box-shadow .45s;
+  }
+  .screen[data-theme="dark"] .fab { color: #0B1120; }
+  .fab:hover { transform: translateY(-3px) rotate(90deg); }
+  .fab:active { transform: scale(.92); }
+
+  /* ============ Editor ============ */
+  .editor-topbar { flex: 0 0 56px; display: flex; align-items: center; padding: 0 8px; }
+  .editor-topbar .spacer { flex: 1; }
+  .save-btn {
+    border: 0; background: transparent; cursor: pointer; font: inherit;
+    font-size: 16.5px; font-weight: 600; color: var(--primary); padding: 10px 14px; border-radius: 12px;
+    transition: background .15s, color .45s, transform .15s;
+  }
+  .save-btn:hover { background: var(--hairline); }
+  .save-btn:active { transform: scale(.95); }
+
+  .title-input {
+    border: 0; background: transparent; outline: 0; width: 100%;
+    font: inherit; font-size: 28px; font-weight: 700; letter-spacing: -.6px; color: var(--text);
+    padding: 8px 20px 4px;
+  }
+  .title-input::placeholder { color: var(--text); opacity: .35; }
+
+  .rich-editor {
+    flex: 1; outline: 0; padding: 10px 20px 20px; overflow-y: auto;
+    font-size: 17px; line-height: 27px; color: var(--text); caret-color: var(--primary);
+    scrollbar-width: thin; scrollbar-color: var(--card-border) transparent;
+  }
+  .rich-editor:empty::before {
+    content: attr(data-placeholder); color: var(--text); opacity: .35; pointer-events: none;
+  }
+  .rich-editor ul, .rich-editor ol { padding-left: 22px; margin: 4px 0; }
+  .rich-editor b, .rich-editor strong { font-weight: 700; }
+
+  .format-bar {
+    flex: 0 0 54px; display: flex; align-items: center; justify-content: space-evenly;
+    background: var(--card); border-top: 1px solid var(--hairline); padding: 0 6px calc(env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 18px rgba(10, 20, 35, .08); transition: background .45s; z-index: 5;
+  }
+  .fmt-btn {
+    width: 52px; height: 44px; border: 0; border-radius: 12px; background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--text-2);
+    transition: background .15s, color .2s, transform .15s;
+  }
+  .fmt-btn:hover { background: var(--hairline); }
+  .fmt-btn:active { transform: scale(.9); }
+  .fmt-btn.active { color: var(--primary); background: var(--primary-container); }
+
+  /* ============ Toast ============ */
+  .toast {
+    position: absolute; left: 50%; bottom: 26px; transform: translate(-50%, 16px);
+    background: rgba(17, 24, 39, .92); color: #f1f5f9; font-size: 13px; font-weight: 500;
+    padding: 11px 20px; border-radius: 14px; opacity: 0; pointer-events: none; z-index: 50;
+    transition: opacity .3s var(--ease-standard), transform .3s var(--ease-spring); white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Small screens: full-bleed app, no frame */
+  @media (max-width: 600px), (max-height: 640px) {
+    body { overflow: hidden; background: var(--appbg, #0a1220); }
+    .stage { padding: 0; gap: 0; }
+    .caption, .backdrop { display: none; }
+    .device { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
+    .device::before, .device::after, .notch { display: none; }
+    .screen { border-radius: 0; }
+    .statusbar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient winter backdrop (desktop only) -->
+<div class="backdrop" id="backdrop" aria-hidden="true"></div>
+
+<div class="stage">
+
+  <!-- Side caption (desktop only) -->
+  <aside class="caption">
+    <div class="kicker">Interactive Preview</div>
+    <h1>Sheen <span class="ice">Notes</span> in the browser</h1>
+    <p>
+      A faithful, clickable recreation of the actual Android app (Jetpack Compose UI),
+      rendered here so you can see and feel the design without a device or emulator.
+    </p>
+    <ul>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cb7e8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>Kashmir winter palette — frosted whites, ice-blue accents, midnight-slate dark mode</li>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cb7e8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>Live search across titles and note bodies</li>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cb7e8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>Rich-text editor — bold, italic, underline, bullet lists</li>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cb7e8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>Staggered note grid, shared-axis transitions, FAB → editor morph</li>
+      <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cb7e8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 10"/></svg>Theme toggle persisted in the browser, seeded with sample notes</li>
+    </ul>
+    <div class="footnote">
+      This is a UI mock of the app's Compose screens — the real app persists notes offline via Room and builds to an Android APK.
+      Build the real thing with <code>./gradlew :app:assembleDebug</code> after installing the Android SDK. The preview stores edits in <code>localStorage</code>.
+    </div>
+  </aside>
+
+  <!-- Phone frame -->
+  <div class="device" aria-label="Sheen Notes phone preview">
+    <div class="notch"></div>
+    <div class="screen" id="screen" data-theme="dark">
+
+      <!-- Status bar -->
+      <div class="statusbar">
+        <span id="clock">9:41</span>
+        <span class="icons">
+          <!-- signal -->
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="0.8"/><rect x="4.5" y="5" width="3" height="7" rx="0.8"/><rect x="9" y="2.5" width="3" height="9.5" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8"/></svg>
+          <!-- wifi -->
+          <svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 6.5a14 14 0 0 1 19 0"/><path d="M6.5 11a9 9 0 0 1 11 0"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/></svg>
+          <!-- battery -->
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.7" y="0.7" width="20" height="10.6" rx="2.6" stroke="currentColor" stroke-width="1.3"/><rect x="2.5" y="2.5" width="13.4" height="7" rx="1.2" fill="currentColor"/><path d="M23 4v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+
+      <main class="panes">
+
+        <!-- ============ LIST SCREEN ============ -->
+        <section class="pane pane-list" id="pane-list" aria-label="Notes list">
+          <header class="topbar list">
+            <div class="logo-chip" aria-hidden="true">
+              <!-- Snowflake (AcUnit analogue) -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--on-primary-container)" stroke-width="2" stroke-linecap="round">
+                <path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11"/>
+                <path d="M12 5.5 9.8 3.3M12 5.5l2.2-2.2M12 18.5l-2.2 2.2M12 18.5l2.2 2.2"/>
+              </svg>
+            </div>
+            <span class="appbar-title">Sheen Notes</span>
+            <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+              <svg id="icon-moon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+              <svg id="icon-sun" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none"><circle cx="12" cy="12" r="4.4"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.3 4.3l1.7 1.7M18 18l1.7 1.7M4.3 19.7 6 18M18 6l1.7-1.7"/></svg>
+            </button>
+          </header>
+
+          <div class="search-wrap">
+            <label class="search">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+              <input id="search" type="text" placeholder="Search notes..." autocomplete="off" spellcheck="false" aria-label="Search notes" />
+            </label>
+          </div>
+
+          <div class="grid-scroll" id="grid-scroll">
+            <div class="grid" id="notes-grid"></div>
+            <div class="empty" id="empty-state" hidden>
+              <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-opacity=".45" stroke-width="1.1" stroke-linecap="round">
+                <path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11"/>
+              </svg>
+              <p id="empty-text">The snow is untouched... tap + to write</p>
+            </div>
+          </div>
+
+          <button class="fab" id="fab-add" aria-label="Add note">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></svg>
+          </button>
+        </section>
+
+        <!-- ============ EDITOR SCREEN ============ -->
+        <section class="pane pane-editor" id="pane-editor" aria-label="Note editor" aria-hidden="true">
+          <header class="editor-topbar">
+            <button class="icon-btn" id="editor-back" aria-label="Back">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <span class="spacer"></span>
+            <button class="icon-btn error" id="editor-delete" aria-label="Delete note" hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1.2 14.2a2 2 0 0 0 2 1.8h5.6a2 2 0 0 0 2-1.8L18 6"/></svg>
+            </button>
+            <button class="save-btn" id="editor-save">Save</button>
+          </header>
+
+          <input class="title-input" id="note-title" type="text" placeholder="Title" autocomplete="off" spellcheck="false" aria-label="Note title" />
+          <div class="rich-editor" id="note-body" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Type your note here..." spellcheck="true"></div>
+
+          <footer class="format-bar" aria-label="Formatting toolbar">
+            <button class="fmt-btn" data-cmd="bold" aria-label="Bold" aria-pressed="false">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M7 4h6.3a4 4 0 0 1 0 8H7zM7 12h7.4a4 4 0 0 1 0 8H7z"/></svg>
+            </button>
+            <button class="fmt-btn" data-cmd="italic" aria-label="Italic" aria-pressed="false">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M10 4h8M6 20h8M14.5 4l-5 16"/></svg>
+            </button>
+            <button class="fmt-btn" data-cmd="underline" aria-label="Underline" aria-pressed="false">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M7 4v7a5 5 0 0 0 10 0V4M5.5 20h13"/></svg>
+            </button>
+            <button class="fmt-btn" data-cmd="insertUnorderedList" aria-label="Bullet list" aria-pressed="false">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="6.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="5" cy="17.5" r="1.35" fill="currentColor" stroke="none"/><path d="M10.5 6.5h9M10.5 12h9M10.5 17.5h9"/></svg>
+            </button>
+          </footer>
+        </section>
+
+      </main>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =================================================================
+   Sheen Notes — interactive preview of the Android app UI.
+   Mirrors: NotesScreen / AddNoteScreen / NotesViewModel / Room store.
+   State persists to localStorage; the real app uses Room (offline).
+   ================================================================= */
+
+const STORAGE_KEY = "sheenNotesPreview.v1";
+const THEME_KEY = "sheenNotesPreview.theme";
+
+const seedNotes = [
+  {
+    id: 1,
+    title: "Kashmir snow checklist",
+    html: "<ul><li>Pheran &amp; woollen socks</li><li>Kangri (fire pot)</li><li>Torch + spare batteries</li><li>Packet of nun chai</li><li>Charger — load-shedding nights</li></ul>",
+    ts: "Nov 16"
+  },
+  {
+    id: 2,
+    title: "Ideas for Sheen Notes v2",
+    html: "<ol><li>Sync notes via Firebase when online</li><li>Pinned notes row on top</li><li>Handwritten scratchpad with stylus</li><li>Export to PDF</li></ol>",
+    ts: "Nov 14"
+  },
+  {
+    id: 3,
+    title: "Kahwa recipe (grandmother's)",
+    html: "Simmer <b>green tea</b> with saffron, cardamom, cinnamon and cloves for 5 minutes. Finish with <i>crushed almonds</i> and a thread of honey. Serve steaming in copper cups.",
+    ts: "Nov 11"
+  },
+  {
+    id: 4,
+    title: "Note to self",
+    html: "&ldquo;The snow is untouched... tap + to write.&rdquo;<br><br>Keep the UI minimal. Every feature must earn its place on the frosted glass.",
+    ts: "Nov 08"
+  },
+  {
+    id: 5,
+    title: "Reading list",
+    html: "<ul><li>The Garden of the Finzi-Continis</li><li>Field Notes from a Pandemic</li><li>Article: <u>glassmorphism in Material 3</u></li></ul>",
+    ts: "Nov 02"
+  }
+];
+
+const state = {
+  notes: [],
+  query: "",
+  theme: "dark",
+  editingId: null // null => new note
+};
+
+/* ---------- persistence ---------- */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      state.notes = JSON.parse(raw);
+    } else {
+      state.notes = seedNotes.slice();
+      saveState();
+    }
+  } catch (e) {
+    state.notes = seedNotes.slice();
+  }
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    if (t === "light" || t === "dark") { state.theme = t; return; }
+  } catch (e) { /* fall through */ }
+  state.theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes)); } catch (e) { /* private mode */ }
+}
+function saveTheme() {
+  try { localStorage.setItem(THEME_KEY, state.theme); } catch (e) { /* private mode */ }
+}
+
+/* ---------- helpers ---------- */
+const $ = (sel) => document.querySelector(sel);
+const grid = $("#notes-grid");
+const emptyState = $("#empty-state");
+const emptyText = $("#empty-text");
+const screenEl = $("#screen");
+const paneList = $("#pane-list");
+const paneEditor = $("#pane-editor");
+const titleInput = $("#note-title");
+const bodyEditor = $("#note-body");
+const deleteBtn = $("#editor-delete");
+const toastEl = $("#toast");
+let toastTimer = null;
+
+const stripHtml = (html) => {
+  const div = document.createElement("div");
+  div.innerHTML = html || "";
+  return (div.textContent || div.innerText || "").trim();
+};
+const nowStamp = () =>
+  new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit" });
+const nextId = () => state.notes.reduce((m, n) => Math.max(m, n.id), 0) + 1;
+const escapeHtml = (s) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+}
+
+/* ---------- theme ---------- */
+function applyTheme() {
+  screenEl.dataset.theme = state.theme;
+  $("#icon-moon").style.display = state.theme === "dark" ? "none" : "block";
+  $("#icon-sun").style.display = state.theme === "dark" ? "block" : "none";
+  const meta = document.querySelector("meta[name=theme-color]");
+  if (meta) meta.setAttribute("content", state.theme === "dark" ? "#0B1120" : "#F2F7FA");
+}
+$("#theme-toggle").addEventListener("click", () => {
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  applyTheme();
+  saveTheme();
+});
+
+/* ---------- list rendering ---------- */
+function filteredNotes() {
+  const q = state.query.trim().toLowerCase();
+  if (!q) return state.notes.slice().sort((a, b) => b.id - a.id);
+  return state.notes
+    .slice()
+    .sort((a, b) => b.id - a.id)
+    .filter(n =>
+      (n.title || "").toLowerCase().includes(q) ||
+      stripHtml(n.html).toLowerCase().includes(q)
+    );
+}
+
+function renderGrid() {
+  const notes = filteredNotes();
+  grid.innerHTML = notes.map(n => `
+    <button class="note-card" data-id="${n.id}" aria-label="Open note ${escapeHtml(n.title || "Untitled")}">
+      <span class="label">JOURNAL</span>
+      <h3>${escapeHtml(n.title || "Untitled")}</h3>
+      <div class="preview">${escapeHtml(stripHtml(n.html))}</div>
+      <span class="meta">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+        ${escapeHtml(n.ts)}
+      </span>
+    </button>`).join("");
+
+  const showEmpty = notes.length === 0;
+  emptyState.hidden = !showEmpty;
+  grid.hidden = showEmpty;
+  emptyText.textContent = state.query.trim()
+    ? "No footprints in the snow..."
+    : "The snow is untouched... tap + to write";
+}
+
+grid.addEventListener("click", (e) => {
+  const card = e.target.closest(".note-card");
+  if (card) openEditor(Number(card.dataset.id));
+});
+
+$("#search").addEventListener("input", (e) => {
+  state.query = e.target.value;
+  renderGrid();
+});
+
+/* ---------- editor ---------- */
+function openEditor(noteId) {
+  state.editingId = noteId === -1 ? null : noteId;
+  const note = state.editingId == null ? null : state.notes.find(n => n.id === state.editingId);
+
+  titleInput.value = note ? note.title : "";
+  bodyEditor.innerHTML = note ? note.html : "";
+  deleteBtn.hidden = !note;
+
+  paneEditor.classList.add("active");
+  paneEditor.setAttribute("aria-hidden", "false");
+  updateToolbarStates();
+  setTimeout(() => (note ? bodyEditor : titleInput).focus({ preventScroll: true }), 220);
+}
+function closeEditor() {
+  paneEditor.classList.remove("active");
+  paneEditor.setAttribute("aria-hidden", "true");
+  titleInput.blur();
+  bodyEditor.blur();
+}
+function saveAndClose() {
+  const title = titleInput.value.trim();
+  const html = bodyEditor.innerHTML.trim();
+  const bodyText = stripHtml(html);
+
+  if (title || bodyText) {
+    if (state.editingId == null) {
+      state.notes.push({ id: nextId(), title, html, ts: nowStamp() });
+      showToast("Note saved");
+    } else {
+      const n = state.notes.find(n => n.id === state.editingId);
+      if (n) { n.title = title; n.html = html; n.ts = nowStamp(); }
+      showToast("Note updated");
+    }
+    saveState();
+  }
+  renderGrid();
+  closeEditor();
+}
+function deleteCurrent() {
+  if (state.editingId == null) return;
+  state.notes = state.notes.filter(n => n.id !== state.editingId);
+  saveState();
+  renderGrid();
+  closeEditor();
+  showToast("Note deleted");
+}
+
+$("#fab-add").addEventListener("click", () => openEditor(-1));
+$("#editor-back").addEventListener("click", closeEditor);
+$("#editor-save").addEventListener("click", saveAndClose);
+deleteBtn.addEventListener("click", deleteCurrent);
+
+/* Formatting toolbar */
+const fmtButtons = Array.from(document.querySelectorAll(".fmt-btn"));
+fmtButtons.forEach(btn => {
+  btn.addEventListener("mousedown", (e) => e.preventDefault()); // keep editor selection
+  btn.addEventListener("click", () => {
+    const cmd = btn.dataset.cmd;
+    try { document.execCommand(cmd, false, null); } catch (e) { /* unsupported */ }
+    bodyEditor.focus();
+    updateToolbarStates();
+  });
+});
+function updateToolbarStates() {
+  fmtButtons.forEach(btn => {
+    let active = false;
+    try { active = document.queryCommandState(btn.dataset.cmd); } catch (e) { active = false; }
+    btn.classList.toggle("active", !!active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+}
+["keyup", "mouseup", "focus"].forEach(ev => bodyEditor.addEventListener(ev, updateToolbarStates));
+document.addEventListener("selectionchange", () => {
+  if (!paneEditor.classList.contains("active")) return;
+  const sel = document.getSelection();
+  if (sel && sel.anchorNode && bodyEditor.contains(sel.anchorNode)) {
+    updateToolbarStates();
+  }
+});
+
+/* Keyboard: Escape closes editor, Ctrl/Cmd+S saves */
+document.addEventListener("keydown", (e) => {
+  if (!paneEditor.classList.contains("active")) return;
+  if (e.key === "Escape") closeEditor();
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); saveAndClose(); }
+});
+
+/* ---------- ambient snow on desktop backdrop ---------- */
+(function seedSnow() {
+  const backdrop = $("#backdrop");
+  if (!backdrop) return;
+  const FLAKES = 42;
+  let html = "";
+  for (let i = 0; i < FLAKES; i++) {
+    const size = (Math.random() * 3.2 + 1.6).toFixed(1);
+    const left = (Math.random() * 100).toFixed(2);
+    const dur = (Math.random() * 16 + 14).toFixed(1);
+    const delay = (-Math.random() * 22).toFixed(1);
+    const drift = (Math.random() * 8 - 4).toFixed(2);
+    html += `<span class="snowflake-bg" style="left:${left}vw;font-size:${size}px;animation-duration:${dur}s;animation-delay:${delay}s;margin-left:${drift}vw">&#10052;</span>`;
+  }
+  backdrop.innerHTML = html;
+})();
+
+/* ---------- live clock in status bar ---------- */
+function tickClock() {
+  const el = $("#clock");
+  if (!el) return;
+  el.textContent = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false });
+}
+setInterval(tickClock, 15000);
+tickClock();
+
+/* ---------- boot ---------- */
+loadState();
+applyTheme();
+renderGrid();
+</script>
+</body>
+</html>

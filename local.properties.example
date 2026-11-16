@@ -1,0 +1,4 @@
+# Copy this file to local.properties and adjust the path to your Android SDK.
+# local.properties is gitignored and machine-specific.
+# On macOS/Linux this is usually ~/Android/Sdk; on Windows, C:\\Users\\<you>\\AppData\\Local\\Android\\Sdk
+sdk.dir=/path/to/Android/Sdk

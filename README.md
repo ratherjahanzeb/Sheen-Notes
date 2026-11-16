@@ -3,6 +3,41 @@
 <img width="1080" height="2144" alt="1000002225" src="https://github.com/user-attachments/assets/aab6a65a-5937-4112-929e-46e52953a290" />
 <img width="1080" height="2144" alt="1000002224" src="https://github.com/user-attachments/assets/1f7862d5-23a3-4c0b-ac2a-b9bc0bba6e34" />
 
+## Development Setup
+
+**Prerequisites**
+
+- JDK 17+ (e.g. Eclipse Temurin 17 or 21)
+- Android SDK with platform **36** (Android 16, minor API 36.1) and build-tools installed — the easiest way is to install [Android Studio](https://developer.android.com/studio) and open this folder once.
+- A `.env` file with the keys from `.env.example` (copy `.env.example` to `.env` and fill in `GEMINI_API_KEY` if you use the Gemini AI features).
+
+**Getting started**
+
+```bash
+./scripts/setup-dev.sh   # checks JDK, writes local.properties, generates debug.keystore, creates .env
+./gradlew :app:assembleDebug
+```
+
+**Common tasks**
+
+| Task | Command |
+| --- | --- |
+| Build a debug APK | `./gradlew :app:assembleDebug` |
+| Run unit tests (Robolectric) | `./gradlew :app:testDebugUnitTest` |
+| Run lint | `./gradlew :app:lintDebug` |
+| Record/verify screenshot tests | `./gradlew :app:roborazziDebugRecord` / `./gradlew :app:roborazziDebugVerify` |
+
+The debug build signs with `./debug.keystore` (password `android`, alias `androiddebugkey`), which `scripts/setup-dev.sh` creates automatically; it is gitignored. Release builds read `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD` from the environment.
+
+**Project layout**
+
+- `app/src/main/java/com/example/model` — Room database (`Note`, `NoteDao`, `NoteRepository`, `AppDatabase`)
+- `app/src/main/java/com/example/ui` — Compose UI (`NotesScreen`, `AddNoteScreen`, `NotesViewModel`, navigation, theme)
+- `app/src/test` — JVM unit tests (Robolectric + Roborazzi screenshot tests)
+- `app/src/androidTest` — instrumented tests
+
+---
+
 _📌Sheen Notes features a minimal winter aesthetic, offline storage, rich text editing, real-time search, smooth animations, and a dedicated dark mode._
 
 
