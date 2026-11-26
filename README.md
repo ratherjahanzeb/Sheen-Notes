@@ -25,4 +25,5 @@ _📌Sheen Notes features a minimal winter aesthetic, offline storage, rich text
 
 ✨​Fluid Animations: Smooth transitions that seamlessly expand note cards from the grid into the full editor screen.
 
-__**Join Discord Server; https://discord.gg/tQkJKeyT9M**__
+
+
